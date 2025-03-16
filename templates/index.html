@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>QR Code Generator</h1>
+        <form id="qrForm" enctype="multipart/form-data">
+            <label for="qr_name">QR Code Name:</label><br>
+            <input type="text" id="qr_name" name="qr_name" placeholder="Enter QR Code Name"><br>
+            
+            <label for="data">Enter Data (Text, URL, etc.):</label><br>
+            <input type="text" id="data" name="data" placeholder="Enter Data"><br>
+           
+            <label for="file">Or Upload a File (Image, Video, PDF, etc.):</label><br>
+            <input type="file" id="file" name="file" accept="*">
+
+            <button type="submit">Generate QR Code</button>
+        </form>
+
+        <div id="qrResult" class="hidden">
+            <h2>Your QR Code</h2>
+            <img id="qrImage" src="" alt="QR Code">
+            <p id="qrUrl"></p>
+            <button onclick="copyToClipboard()">📋 Copy URL</button>
+            <a id="downloadQR" download>
+                <button>⬇ Download QR</button>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("qrForm").addEventListener("submit", async function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+
+            try {
+                const response = await axios.post("/generate_qr", formData);
+                document.getElementById("qrImage").src = response.data.qr_url;
+                document.getElementById("qrUrl").textContent = response.data.qr_url;
+                document.getElementById("downloadQR").href = response.data.qr_url;
+                document.getElementById("qrResult").classList.remove("hidden");
+            } catch (error) {
+                alert("Error generating QR Code!");
+            }
+        });
+
+        function copyToClipboard() {
+            const url = document.getElementById("qrUrl").textContent;
+            navigator.clipboard.writeText(url);
+            alert("QR URL copied!");
+        }
+    </script>
+</body>
+</html>
